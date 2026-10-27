@@ -1,14 +1,16 @@
 <script>
 import "./index.css";
 import LineChartSvg from "./components/charts/LineChartSvg.vue";
-// import BarChartSvg from "./components/charts/BarChartSvg.vue";
+import BarChartSvg from "./components/charts/BarChartSvg.vue";
 import LineChartCanvas from "./components/charts/LineChartCanvas.vue";
-// import BarChartCanvas from "./components/charts/BarChartCanvas.vue";
+import BarChartCanvas from "./components/charts/BarChartCanvas.vue";
 
 export default {
   components: {
     LineChartSvg,
     LineChartCanvas,
+    BarChartSvg,
+    BarChartCanvas,
   },
 
   data() {
@@ -23,9 +25,9 @@ export default {
   <h1>Bar and Chart with SVG tag</h1>
   <div class="box">
     <LineChartSvg :values="values" />
-    <!-- <BarChartSvg :values="values" /> -->
+    <BarChartSvg :values="values" />
     <LineChartCanvas :values="values" />
-    <!-- <BarChartCanvas :values="values" /> -->
+    <BarChartCanvas :values="values" />
   </div>
 </template>
 

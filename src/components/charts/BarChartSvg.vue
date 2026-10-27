@@ -23,7 +23,7 @@
   </div>
 </template>
 
-<script setup>
+<!-- <script setup>
 import { ref, computed } from "vue";
 
 const props = defineProps({
@@ -90,8 +90,88 @@ const valuesPoints = computed(() => {
 
   return points;
 });
-</script>
+</script> -->
 
+<script>
+export default {
+  props: {
+    values: {
+      type: Array,
+      required: true,
+    },
+  },
+
+  data() {
+    return {
+      svgHeight: 300,
+      startX: 40,
+      barWidth: 35,
+    };
+  },
+
+  computed: {
+    svgWidth() {
+      return this.values.length * (this.barWidth + 20);
+    },
+
+    onlyNumbers() {
+      return this.values.filter((item) => (typeof item === "number" && item > 0 ? item : null));
+    },
+
+    endChartValue() {
+      if (this.onlyNumbers.length === 0) return;
+
+      const maxValue = Math.max(...this.onlyNumbers);
+
+      return Math.round(maxValue * 0.1 + maxValue);
+    },
+
+    startChartValue() {
+      if (this.onlyNumbers.length === 0) return;
+
+      const minValue = Math.min(...this.onlyNumbers);
+
+      return Math.round(minValue - minValue * 0.1);
+    },
+
+    valuesPoints() {
+      let currentX = this.startX;
+      let currentY = 0;
+      const points = [];
+
+      this.onlyNumbers.map((item, idx) => {
+        if (idx !== 0) {
+          const xCordinate = currentX + this.barWidth + 20;
+          currentX = xCordinate;
+        }
+        const yCordinate = this.svgHeight - ((item - this.startChartValue) / (this.endChartValue - this.startChartValue)) * (this.svgHeight - 20);
+        currentY = yCordinate;
+
+        const pointsBox = {
+          value: item,
+          x: currentX,
+          y: currentY,
+        };
+
+        points.push({ ...pointsBox });
+      });
+
+      return points;
+    },
+  },
+
+  methods: {
+    getBarHeight(value) {
+      const min = this.startChartValue;
+      const max = this.endChartValue;
+
+      const result = (value - min) / (max - min); // 43 / 61 = 0.7 * 300 = 210
+
+      return result * this.svgHeight;
+    },
+  },
+};
+</script>
 <style scoped>
 .chart {
   /* width: 100%; */

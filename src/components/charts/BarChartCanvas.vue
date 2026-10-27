@@ -8,129 +8,140 @@
   </div>
 </template>
 
-<script setup>
-import { computed, onMounted, ref } from "vue";
-
-const props = defineProps({
-  values: {
-    type: Array,
-    required: true,
+<script>
+export default {
+  props: {
+    values: {
+      type: Array,
+      required: true,
+    },
   },
-});
 
-const canvasRef = ref(null);
-const canvasHeight = 300;
-const startX = 40;
-const barWidth = 35;
-
-const onlyNumbers = computed(() => props.values.filter((item) => (typeof item === "number" && item > 0 ? item : null)));
-
-const endChartValue = computed(() => {
-  if (onlyNumbers.value.length === 0) return;
-
-  const maxValue = Math.max(...onlyNumbers.value);
-
-  return Math.round(maxValue * 0.1 + maxValue);
-});
-
-const startChartValue = computed(() => {
-  if (onlyNumbers.value.length === 0) return;
-
-  const minValue = Math.min(...onlyNumbers.value);
-
-  return Math.round(minValue - minValue * 0.1);
-});
-
-const valuesPoints = computed(() => {
-  let currentX = startX;
-  let currentY = 0;
-  const points = [];
-
-  onlyNumbers.value.map((item, idx) => {
-    if (idx !== 0) {
-      const xCordinate = currentX + barWidth + 20;
-      currentX = xCordinate;
-    }
-    const yCordinate = canvasHeight - ((item - startChartValue.value) / (endChartValue.value - startChartValue.value)) * (canvasHeight - 20);
-    currentY = yCordinate;
-
-    const pointsBox = {
-      value: item,
-      x: currentX,
-      y: currentY,
+  data() {
+    return {
+      canvasHeight: 300,
+      startX: 40,
+      barWidth: 35,
     };
+  },
 
-    points.push({ ...pointsBox });
-  });
+  computed: {
+    canvasWidth() {
+      return this.values.length * (this.barWidth + 20);
+    },
 
-  return points;
-});
+    onlyNumbers() {
+      return this.values.filter((item) => (typeof item === "number" && item > 0 ? item : null));
+    },
 
-function getBarHeight(value) {
-  const min = startChartValue.value;
-  const max = endChartValue.value;
+    endChartValue() {
+      if (this.onlyNumbers.length === 0) return;
 
-  const result = (value - min) / (max - min); // 43 / 61 = 0.7 * 300 = 210
+      const maxValue = Math.max(...this.onlyNumbers);
 
-  return result * canvasHeight;
-}
+      return Math.round(maxValue * 0.1 + maxValue);
+    },
 
-const canvasWidth = computed(() => props.values.length * (barWidth + 20));
+    startChartValue() {
+      if (this.onlyNumbers.length === 0) return;
 
-const drawCanvas = () => {
-  const canvas = canvasRef.value;
+      const minValue = Math.min(...this.onlyNumbers);
 
-  const width = canvasWidth.value;
-  const scale = 5;
+      return Math.round(minValue - minValue * 0.1);
+    },
 
-  canvas.width = width * scale;
-  canvas.height = canvasHeight * scale;
+    valuesPoints() {
+      let currentX = this.startX;
+      let currentY = 0;
+      const points = [];
 
-  canvas.style.width = `${width}px`;
-  canvas.style.height = `${canvasHeight}px`;
+      this.onlyNumbers.map((item, idx) => {
+        if (idx !== 0) {
+          const xCordinate = currentX + this.barWidth + 20;
+          currentX = xCordinate;
+        }
+        const yCordinate = this.canvasHeight - ((item - this.startChartValue) / (this.endChartValue - this.startChartValue)) * (this.canvasHeight - 20);
+        currentY = yCordinate;
 
-  const ctx = canvas.getContext("2d");
-  ctx.scale(scale, scale);
+        const pointsBox = {
+          value: item,
+          x: currentX,
+          y: currentY,
+        };
 
-  // End line
-  ctx.beginPath();
-  ctx.moveTo(startX, 10);
-  ctx.lineTo(canvasWidth.value, 10);
-  ctx.strokeStyle = "#ccc";
-  ctx.lineWidth = 1;
-  ctx.font = "10";
-  ctx.fillText(endChartValue.value, startX - 18, 10);
-  ctx.stroke();
+        points.push({ ...pointsBox });
+      });
 
-  // Start line
-  ctx.beginPath();
-  ctx.moveTo(startX, canvasHeight - 15);
-  ctx.lineTo(canvasWidth.value, canvasHeight - 15);
-  ctx.strokeStyle = "#ccc";
-  ctx.lineWidth = 1;
-  ctx.font = "10";
-  ctx.fillText(startChartValue.value, startX - 18, canvasHeight - 0);
-  ctx.stroke();
+      return points;
+    },
+  },
 
-  valuesPoints.value.forEach((point, idx) => {
-    ctx.beginPath();
-    ctx.fillStyle = "#374151";
-    ctx.roundRect(point.x, canvasHeight - getBarHeight(point.value) - 15, barWidth, getBarHeight(point.value), 4);
-    ctx.fill();
+  methods: {
+    getBarHeight(value) {
+      const min = this.startChartValue;
+      const max = this.endChartValue;
 
-    ctx.font = "400 12px Arial";
-    ctx.fillStyle = "#374140";
-    ctx.fillText(point.value, point.x + 12, point.y - 35);
+      const result = (value - min) / (max - min); // 43 / 61 = 0.7 * 300 = 210
 
-    ctx.font = "400 10px Arial";
-    ctx.fillStyle = "#000";
-    ctx.fillText(idx + 1, startX + 12 + idx * (barWidth + 20), canvasHeight);
-  });
+      return result * this.canvasHeight;
+    },
+
+    drawCanvas() {
+      const canvas = this.$refs.canvasRef;
+
+      const width = this.canvasWidth;
+      const scale = 5;
+
+      canvas.width = width * scale;
+      canvas.height = this.canvasHeight * scale;
+
+      canvas.style.width = `${width}px`;
+      canvas.style.height = `${this.canvasHeight}px`;
+
+      const ctx = canvas.getContext("2d");
+      ctx.scale(scale, scale);
+
+      // End line
+      ctx.beginPath();
+      ctx.moveTo(this.startX, 10);
+      ctx.lineTo(this.canvasWidth, 10);
+      ctx.strokeStyle = "#ccc";
+      ctx.lineWidth = 1;
+      ctx.font = "10";
+      ctx.fillText(this.endChartValue, this.startX - 18, 10);
+      ctx.stroke();
+
+      // Start line
+      ctx.beginPath();
+      ctx.moveTo(this.startX, this.canvasHeight - 15);
+      ctx.lineTo(this.canvasWidth, this.canvasHeight - 15);
+      ctx.strokeStyle = "#ccc";
+      ctx.lineWidth = 1;
+      ctx.font = "10";
+      ctx.fillText(this.startChartValue, this.startX - 18, this.canvasHeight - 0);
+      ctx.stroke();
+
+      this.valuesPoints.forEach((point, idx) => {
+        ctx.beginPath();
+        ctx.fillStyle = "#374151";
+        ctx.roundRect(point.x, this.canvasHeight - this.getBarHeight(point.value) - 15, this.barWidth, this.getBarHeight(point.value), 4);
+        ctx.fill();
+
+        ctx.font = "400 12px Arial";
+        ctx.fillStyle = "#374140";
+        ctx.fillText(point.value, point.x + 12, point.y - 35);
+
+        ctx.font = "400 10px Arial";
+        ctx.fillStyle = "#000";
+        ctx.fillText(idx + 1, this.startX + 12 + idx * (this.barWidth + 20), this.canvasHeight);
+      });
+    },
+  },
+
+  mounted() {
+    this.drawCanvas();
+  },
 };
-
-onMounted(() => {
-  drawCanvas();
-});
 </script>
 
 <style scoped>
