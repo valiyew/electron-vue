@@ -28,7 +28,7 @@
 
         <g v-for="(point, idx) in valuesPoints" :key="idx">
           <path :d="linePath()" stroke="#2563eb" fill="none" stroke-width="2" />
-          <circle class="circle" :cx="point.x" :cy="point.y" r="5" />
+          <circle v-if="point.value" class="circle" :cx="point.x" :cy="point.y" r="5" />
 
           <text :x="point.x" :y="point.y - 10" font-size="10px" text-anchor="middle">{{ point.value }}</text>
         </g>
@@ -185,16 +185,19 @@ export default {
       targetY: 0,
       isHovering: false,
       tooltipValue: 0,
+      isDrawing: false,
     };
   },
 
   computed: {
     svgWidth() {
-      return this.values.length * this.circleGap - 40;
+      return this.values.length * this.circleGap;
     },
 
     onlyNumbers() {
-      return this.values.filter((item) => (typeof item === "number" && item > 0 ? item : null));
+      const isNumeric = (item) => /^[+-]?\d+(\.\d+)?$/.test(item);
+
+      return this.values.map((item) => (isNumeric(String(item)) && item > 0 ? Number(item) : null));
     },
 
     startChartValue() {
@@ -218,18 +221,21 @@ export default {
       let currentY = 0;
       const points = [];
 
+      console.log(this.onlyNumbers);
+
       this.onlyNumbers.map((item, idx) => {
         if (idx !== 0) {
           const xCordinate = currentX + this.circleGap;
           currentX = xCordinate;
         }
+
         const yCordinate = this.svgHeight - 25 - ((item - this.startChartValue) / (this.endChartValue - this.startChartValue)) * (this.svgHeight - 50);
         currentY = yCordinate;
 
         const pointsBox = {
           value: item,
           x: currentX,
-          y: currentY,
+          y: item === null ? null : currentY,
         };
 
         points.push({ ...pointsBox });
@@ -273,19 +279,19 @@ export default {
     linePath() {
       const pointsArr = this.valuesPoints;
 
-      let result = `M ${pointsArr[0].x} ${pointsArr[0].y}`;
+      let result = "";
 
       for (let idx = 0; idx < pointsArr.length - 1; idx++) {
         const current = pointsArr[idx];
         const next = pointsArr[idx + 1];
 
-        const cp1x = current.x + (next.x - current.x) / 2;
-        const cp1y = current.y;
+        if (current.y !== null && next.y !== null) {
+          const cpx = current.x + (next.x - current.x) / 2;
+          const cp1y = current.y;
+          const cp2y = next.y;
 
-        const cp2x = current.x + (next.x - current.x) / 2;
-        const cp2y = next.y;
-
-        result = result + ` C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${next.x} ${next.y}`;
+          result = result + `M ${current.x} ${current.y} C ${cpx} ${cp1y}, ${cpx} ${cp2y}, ${next.x} ${next.y}`;
+        }
       }
 
       return result;

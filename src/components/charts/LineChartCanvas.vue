@@ -229,7 +229,9 @@ export default {
     },
 
     onlyNumbers() {
-      return this.values.filter((item) => (typeof item === "number" && item > 0 ? item : null));
+      const isNumeric = (item) => /^[+-]?\d+(\.\d+)?$/.test(item);
+
+      return this.values.filter((item) => isNumeric(String(item)) && item > 0).map((item) => Number(item));
     },
 
     endChartValue() {
@@ -279,74 +281,87 @@ export default {
       const canvas = this.$refs.canvasRef;
 
       const width = this.canvasWidth;
-      const scale = 5;
+      const height = this.canvasHeight;
+      const pixelRatio = 5;
 
-      canvas.width = width * scale;
-      canvas.height = this.canvasHeight * scale;
+      canvas.width = width * pixelRatio;
+      canvas.height = height * pixelRatio;
 
-      canvas.style.width = `${this.canvasWidth}px`;
-      canvas.style.height = `${this.canvasHeight}px`;
+      canvas.style.width = `${width}px`;
+      canvas.style.height = `${height}px`;
 
       const ctx = canvas.getContext("2d");
-      const pointsArr = this.valuesPoints;
-      ctx.scale(scale, scale);
 
       // End line
       ctx.beginPath();
-      ctx.moveTo(this.startX, 10);
-      ctx.lineTo(this.canvasWidth, 10);
+      ctx.moveTo(this.startX * pixelRatio, 10 * pixelRatio);
+      ctx.lineTo(width * pixelRatio, 10 * pixelRatio);
       ctx.strokeStyle = "#ccc";
-      ctx.lineWidth = 1;
-      ctx.font = "10";
-      ctx.fillText(this.endChartValue, this.startX - 18, 10);
+      ctx.lineWidth = pixelRatio;
+      ctx.font = `${10 * pixelRatio}px sans-serif`;
+      ctx.fillStyle = "#374151";
+
+      ctx.fillText(this.endChartValue, (this.startX - 18) * pixelRatio, 10 * pixelRatio);
       ctx.stroke();
 
       // Start line
       ctx.beginPath();
-      ctx.moveTo(this.startX, this.canvasHeight - 15);
-      ctx.lineTo(this.canvasWidth, this.canvasHeight - 15);
+      ctx.moveTo(this.startX * pixelRatio, (height - 15) * pixelRatio);
+      ctx.lineTo(width * pixelRatio, (height - 15) * pixelRatio);
       ctx.strokeStyle = "#ccc";
-      ctx.lineWidth = 1;
-      ctx.font = "10";
-      ctx.fillText(this.startChartValue, this.startX - 18, this.canvasHeight - 15);
+      ctx.lineWidth = pixelRatio;
+      ctx.font = `${10 * pixelRatio}px sans-serif`;
+
+      ctx.fillText(this.startChartValue, (this.startX - 18) * pixelRatio, (height - 15) * pixelRatio);
       ctx.stroke();
 
-      ctx.beginPath();
-      ctx.moveTo(pointsArr[0].x, pointsArr[0].y);
+      const pointsArr = this.valuesPoints;
+      if (pointsArr.length > 0) {
+        ctx.beginPath();
+        ctx.moveTo(pointsArr[0].x * pixelRatio, pointsArr[0].y * pixelRatio);
 
-      for (let i = 0; i < pointsArr.length - 1; i++) {
-        const current = pointsArr[i];
-        const next = pointsArr[i + 1];
+        for (let i = 0; i < pointsArr.length - 1; i++) {
+          const current = pointsArr[i];
+          const next = pointsArr[i + 1];
 
-        const cp1x = current.x + (next.x - current.x) / 2;
-        const cp1y = current.y;
+          const cp1x = current.x + (next.x - current.x) / 2;
+          const cp1y = current.y;
 
-        const cp2x = current.x + (next.x - current.x) / 2;
-        const cp2y = next.y;
+          const cp2x = current.x + (next.x - current.x) / 2;
+          const cp2y = next.y;
 
-        const last = pointsArr[pointsArr.length - 1];
-        if (last) {
-          ctx.fillText(last.value, last.x - 5, last.y - 30);
+          ctx.bezierCurveTo(cp1x * pixelRatio, cp1y * pixelRatio, cp2x * pixelRatio, cp2y * pixelRatio, next.x * pixelRatio, (next.y - 20) * pixelRatio);
+
+          ctx.fillStyle = "#374151";
+          ctx.font = `${12 * pixelRatio}px sans-serif`;
+
+          ctx.fillText(current.value, (current.x - 5) * pixelRatio, (i !== 0 ? current.y - 25 : current.y - 8) * pixelRatio);
         }
 
-        ctx.fillStyle = "#374151";
-        ctx.lineWidth = 2;
-        ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, next.x, next.y - 20);
-        ctx.fillText(current.value, current.x - 5, i !== 0 ? current.y - 25 : current.y - 8);
+        ctx.strokeStyle = "#149ddd";
+        ctx.lineWidth = 2 * pixelRatio;
         ctx.stroke();
+
+        // Last value label
+        const last = pointsArr[pointsArr.length - 1];
+
+        ctx.fillStyle = "#374151";
+        ctx.font = `${12 * pixelRatio}px sans-serif`;
+        ctx.fillText(last.value, (last.x - 5) * pixelRatio, (last.y - 30) * pixelRatio);
       }
 
       pointsArr.forEach((point, idx) => {
         ctx.beginPath();
-        ctx.arc(point.x, idx === 0 ? point.y : point.y - 18, 5, 0, Math.PI * 2);
+        ctx.arc(point.x * pixelRatio, (idx === 0 ? point.y : point.y - 18) * pixelRatio, 5 * pixelRatio, 0, Math.PI * 2);
+
         ctx.fillStyle = "#149ddd";
         ctx.fill();
 
         ctx.beginPath();
-        ctx.font = "12";
+        ctx.font = `${12 * pixelRatio}px sans-serif`;
         ctx.fillStyle = "#000";
-        ctx.fillText(idx + 1, this.startX + idx * this.circleGap - 2, this.canvasHeight - 1);
-        ctx.stroke();
+
+        ctx.fillText(idx + 1, (this.startX + idx * this.circleGap - 2) * pixelRatio, (height - 1) * pixelRatio);
       });
     },
 
