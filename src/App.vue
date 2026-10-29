@@ -1,33 +1,24 @@
 <script>
 import "./index.css";
-import LineChartSvg from "./components/charts/LineChartSvg.vue";
-import BarChartSvg from "./components/charts/BarChartSvg.vue";
-import LineChartCanvas from "./components/charts/LineChartCanvas.vue";
-import BarChartCanvas from "./components/charts/BarChartCanvas.vue";
+import VertualScrollBar from "./components/vertual-scroll-custom-scroll-bar/VertualScrollBar.vue";
 
 export default {
   components: {
-    LineChartSvg,
-    LineChartCanvas,
-    BarChartSvg,
-    BarChartCanvas,
+    VertualScrollBar,
   },
 
-  data() {
-    return {
-      values: [70, 30, 50, 40, 60, 35, 80, {}, 35, 60, 35, 40, "sdwdw", "100", 60, 35],
-    };
-  },
+  // data() {
+  //   return {
+  //     values: [70, 30, 50, 40, 60, 35, 80, {}, 35, 60, 35, 40, "sdwdw", "100", 60, 35, 34, 34, 54, 65],
+  //   };
+  // },
 };
 </script>
 
 <template>
-  <h1>Bar and Chart with SVG tag</h1>
+  <h1>Vertual Scroll and Custom Scroll bar</h1>
   <div class="box">
-    <LineChartSvg :values="values" />
-    <BarChartSvg :values="values" />
-    <LineChartCanvas :values="values" />
-    <BarChartCanvas :values="values" />
+    <VertualScrollBar />
   </div>
 </template>
 
