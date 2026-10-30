@@ -25,6 +25,7 @@
         </div>
 
         <div :style="{ height: bottomHeight + 'px' }"></div>
+        <!-- <div :style="{ height: isLoadingMoreData ? bottomHeight + 'px' : '0px' }"></div> -->
       </div>
 
       <!-- Custom scrollbar -->
@@ -60,6 +61,7 @@ export default {
       isHovering: false,
       scrollTimer: null,
       isScrolling: false,
+      isLoadingMoreData: false,
 
       // Vertikal skrol
       itemHeight: 110,
@@ -67,8 +69,34 @@ export default {
     };
   },
 
+  computed: {
+    visibleCount() {
+      return Math.ceil(this.contentHeight / this.itemHeight);
+    },
+
+    visibleItems() {
+      const start = this.startIndex;
+      const visibleCount = this.visibleCount;
+
+      // if (start > visibleCount * 2) {
+      //   this.isLoadingMoreData = true;
+      // }
+
+      return this.values.slice(start, start + visibleCount * 2);
+    },
+
+    topHeight() {
+      return this.startIndex * 110;
+    },
+
+    bottomHeight() {
+      return (this.values.length - this.startIndex - this.visibleItems.length) * 110;
+    },
+  },
+
   methods: {
     handleScroll() {
+      this.isScrolling = true;
       const contentRef = this.$refs.contentRef;
       const trackRef = this.$refs.trackRef;
 
@@ -80,8 +108,6 @@ export default {
       const result = (scrollTop / (clientHeight - scrollHeight)) * (trackClientHeight - this.thumbHeight);
       this.thumbTop = Math.abs(result);
 
-      this.isScrolling = true;
-
       clearTimeout(this.scrollTimer);
 
       this.scrollTimer = setTimeout(() => {
@@ -90,10 +116,17 @@ export default {
 
       // Vertual skrol
       this.startIndex = Math.floor(scrollTop / this.itemHeight);
+
+      // Thumb height calculation
+      this.thumbHeight = (clientHeight / scrollHeight) * trackClientHeight;
+      console.log(clientHeight);
+      console.log(scrollHeight);
     },
 
     handleClick(e) {
       const contentRef = this.$refs.contentRef;
+
+      console.log(e);
       contentRef.scrollTop = (e.offsetY / this.contentHeight) * contentRef.scrollHeight;
     },
 
@@ -120,40 +153,6 @@ export default {
       document.addEventListener("mousemove", move);
       document.addEventListener("mouseup", stop);
     },
-  },
-
-  computed: {
-    visibleCount() {
-      return Math.ceil(this.contentHeight / this.itemHeight);
-    },
-
-    visibleItems() {
-      const start = this.startIndex;
-      const visibleCount = this.visibleCount;
-
-      return this.values.slice(start, start + visibleCount * 2);
-    },
-
-    topHeight() {
-      return this.startIndex * 110;
-    },
-
-    bottomHeight() {
-      return (this.values.length - this.startIndex - this.visibleItems.length) * 110;
-    },
-  },
-
-  mounted() {
-    if (this.$refs.contentRef) {
-      const contentRef = this.$refs.contentRef;
-      const trackRef = this.$refs.trackRef;
-
-      const scrollHeight = contentRef.scrollHeight;
-      const clientHeight = contentRef.clientHeight;
-      const trackClientHeight = trackRef.clientHeight;
-
-      this.thumbHeight = (clientHeight / scrollHeight) * trackClientHeight;
-    }
   },
 };
 // 840 - 13.079 = -12.239;
