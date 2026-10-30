@@ -12,7 +12,9 @@
         "
         :style="{ width: `${contentWidth}px`, height: `${contentHeight}px` }"
       >
-        <div class="user-card" v-for="(item, index) in values" :key="item.id">
+        <div :style="{ height: topHeight + 'px' }"></div>
+
+        <div class="user-card" v-for="(item, index) in visibleItems" :key="item.id" ref="itemsRef">
           <div class="about-user">
             <strong class="user-name">{{ item.name }}</strong>
             <p class="user-job">Job: {{ item.job }}</p>
@@ -21,6 +23,8 @@
 
           <p class="user-desc">{{ item.description }}</p>
         </div>
+
+        <div :style="{ height: bottomHeight + 'px' }"></div>
       </div>
 
       <!-- Custom scrollbar -->
@@ -47,7 +51,7 @@ export default {
         name: `User ${index + 1}`,
         age: 20 + (index % 11),
         job: "Frontend developer",
-        description: "  Lorem ipsum dolor sit amet consectetur adipisicing elit. Voluptas, ducimus?",
+        description: `Lorem ipsum dolor sit amet consectetur adipisicing elit. Voluptas, ducimus?`,
       })),
       contentWidth: 600,
       contentHeight: 800,
@@ -56,6 +60,10 @@ export default {
       isHovering: false,
       scrollTimer: null,
       isScrolling: false,
+
+      // Vertikal skrol
+      itemHeight: 110,
+      startIndex: 0,
     };
   },
 
@@ -79,6 +87,9 @@ export default {
       this.scrollTimer = setTimeout(() => {
         this.isScrolling = false;
       }, 1200);
+
+      // Vertual skrol
+      this.startIndex = Math.floor(scrollTop / this.itemHeight);
     },
 
     handleClick(e) {
@@ -112,7 +123,24 @@ export default {
   },
 
   computed: {
-    visibleItems() {},
+    visibleCount() {
+      return Math.ceil(this.contentHeight / this.itemHeight);
+    },
+
+    visibleItems() {
+      const start = this.startIndex;
+      const visibleCount = this.visibleCount;
+
+      return this.values.slice(start, start + visibleCount * 2);
+    },
+
+    topHeight() {
+      return this.startIndex * 110;
+    },
+
+    bottomHeight() {
+      return (this.values.length - this.startIndex - this.visibleItems.length) * 110;
+    },
   },
 
   mounted() {
