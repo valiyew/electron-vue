@@ -14,7 +14,7 @@
       >
         <div :style="{ height: topHeight + 'px' }"></div>
 
-        <div class="user-card" v-for="(item, index) in visibleItems" :key="item.id" ref="itemsRef">
+        <div :style="{ height: `${item.height}px` }" class="user-card" v-for="(item, index) in visibleItems" :key="item.id" ref="itemsRef">
           <div class="about-user">
             <strong class="user-name">{{ item.name }}</strong>
             <p class="user-job">Job: {{ item.job }}</p>
@@ -52,7 +52,8 @@ export default {
         name: `User ${index + 1}`,
         age: 20 + (index % 11),
         job: "Frontend developer",
-        description: `Lorem ipsum dolor sit amet consectetur adipisicing elit. Voluptas, ducimus?`,
+        height: 110,
+        description: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Voluptas, ducimus?",
       })),
       contentWidth: 600,
       contentHeight: 800,
@@ -119,14 +120,11 @@ export default {
 
       // Thumb height calculation
       this.thumbHeight = (clientHeight / scrollHeight) * trackClientHeight;
-      console.log(clientHeight);
-      console.log(scrollHeight);
     },
 
     handleClick(e) {
       const contentRef = this.$refs.contentRef;
 
-      console.log(e);
       contentRef.scrollTop = (e.offsetY / this.contentHeight) * contentRef.scrollHeight;
     },
 
