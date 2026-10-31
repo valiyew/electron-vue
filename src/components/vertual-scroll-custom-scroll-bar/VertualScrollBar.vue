@@ -14,7 +14,7 @@
       >
         <div :style="{ height: topHeight + 'px' }"></div>
 
-        <div :style="{ height: `${item.height}px` }" class="user-card" v-for="(item, index) in visibleItems" :key="item.id" ref="itemsRef">
+        <div class="user-card" v-for="(item, index) in visibleItems" :key="item.id" ref="itemsRef">
           <div class="about-user">
             <strong class="user-name">{{ item.name }}</strong>
             <p class="user-job">Job: {{ item.job }}</p>
@@ -52,8 +52,10 @@ export default {
         name: `User ${index + 1}`,
         age: 20 + (index % 11),
         job: "Frontend developer",
-        height: 110,
-        description: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Voluptas, ducimus?",
+        description:
+          index % 3 === 0
+            ? `Lorem ipsum dolor sit amet consectetur adipisicing elit. Voluptas, ducimus?`
+            : `Lorem ipsum dolor sit amet consectetur adipisicing elit. Voluptas, ducimus ipsum dolor sit amet consectetur adipisicing elit. Voluptas ipsum dolor sit amet consectetur adipisicing elit. Voluptasipsum dolor sit amet consectetur adipisicing elit. Voluptas?`,
       })),
       contentWidth: 600,
       contentHeight: 800,
@@ -65,7 +67,7 @@ export default {
       isLoadingMoreData: false,
 
       // Vertikal skrol
-      itemHeight: 110,
+      itemHeight: 0,
       startIndex: 0,
     };
   },
@@ -87,12 +89,17 @@ export default {
     },
 
     topHeight() {
-      return this.startIndex * 110;
+      return this.startIndex * this.itemHeight;
     },
 
     bottomHeight() {
-      return (this.values.length - this.startIndex - this.visibleItems.length) * 110;
+      return (this.values.length - this.startIndex - this.visibleItems.length) * this.itemHeight;
     },
+  },
+
+  mounted() {
+    const contentRef = this.$refs.contentRef;
+    this.itemHeight = contentRef.scrollHeight / this.values.length;
   },
 
   methods: {
