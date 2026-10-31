@@ -25,7 +25,6 @@
         </div>
 
         <div :style="{ height: bottomHeight + 'px' }"></div>
-        <!-- <div :style="{ height: isLoadingMoreData ? bottomHeight + 'px' : '0px' }"></div> -->
       </div>
 
       <!-- Custom scrollbar -->
@@ -37,7 +36,7 @@
         @mouseenter="isHovering = true"
         @mouseleave="isHovering = false"
       >
-        <div :style="{ height: `${thumbHeight}px`, top: `${thumbTop}px` }" class="thumb" @mousedown="handleDrag"></div>
+        <div :style="{ height: thumbHeight > 10 ? `${thumbHeight}px` : `10px`, top: `${thumbTop}px` }" class="thumb" @mousedown.stop="handleDrag"></div>
       </div>
     </div>
   </div>
@@ -64,7 +63,6 @@ export default {
       isHovering: false,
       scrollTimer: null,
       isScrolling: false,
-      isLoadingMoreData: false,
 
       // Vertikal skrol
       itemHeight: 0,
@@ -81,10 +79,6 @@ export default {
       const start = this.startIndex;
       const visibleCount = this.visibleCount;
 
-      // if (start > visibleCount * 2) {
-      //   this.isLoadingMoreData = true;
-      // }
-
       return this.values.slice(start, start + visibleCount * 2);
     },
 
@@ -99,7 +93,17 @@ export default {
 
   mounted() {
     const contentRef = this.$refs.contentRef;
+    const trackRef = this.$refs.trackRef;
+
+    const scrollHeight = contentRef.scrollHeight;
+    const clientHeight = contentRef.clientHeight;
+    const trackClientHeight = trackRef.clientHeight;
+
+    // Item heightini hisoblash
     this.itemHeight = contentRef.scrollHeight / this.values.length;
+
+    // Birinchi renderda thumbni heightini korsatish un
+    this.thumbHeight = (clientHeight / scrollHeight) * trackClientHeight;
   },
 
   methods: {
@@ -131,8 +135,10 @@ export default {
 
     handleClick(e) {
       const contentRef = this.$refs.contentRef;
+      const trackRef = this.$refs.trackRef;
+      const cordinateY = e.clientY - trackRef.getBoundingClientRect().top;
 
-      contentRef.scrollTop = (e.offsetY / this.contentHeight) * contentRef.scrollHeight;
+      contentRef.scrollTop = (cordinateY / this.contentHeight) * contentRef.scrollHeight - 250;
     },
 
     handleDrag(e) {
