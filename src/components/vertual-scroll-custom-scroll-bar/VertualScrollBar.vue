@@ -83,7 +83,7 @@
     </div>
   </div>
 
-  <Transition name="fade-v">
+  <Transition -name="fade-v">
     <div v-if="showCommentModal" class="commentsModal">
       <div class="modal-header">
         <h3>Comments</h3>
@@ -288,7 +288,7 @@ export default {
 <style scoped>
 .fade-v-enter-active,
 .fade-v-leave-active {
-  transition: opacity 0.5s ease;
+  transition: opacity 0.3s ease;
 }
 
 .fade-v-enter-from,
