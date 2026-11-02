@@ -126,7 +126,16 @@ export default {
         comments: Array.from({ length: Math.floor(Math.random() * 5) + 1 }, (_, i) => ({
           id: i + 1,
           name: ["Alex", "John", "David", "Michael", "Oliver"][Math.floor(Math.random() * 5)],
-          text: ["Great post! 🔥", "Amazing! ❤️", "Nice work 👏", "I really like this!", "Awesome photo 😍"][Math.floor(Math.random() * 5)],
+          text: [
+            "Falonchini sapali storismda kirb korila 😍",
+            "Storismga like bosvorilaaa 🔥",
+            "( Pizdes qotb kuletgan stiker )",
+            "🔥😍🔥",
+            "Bekzod aka, blya...",
+            "Baxtli bo‘l, atlet!",
+            "Qo'yganman! Kimga ? Hokiminga...",
+            "Maaazgiii😂",
+          ][Math.floor(Math.random() * 8)],
           image: `https://i.pravatar.cc/150?img=${Math.floor(Math.random() * 70) + 1}`,
         })),
       })),
@@ -259,7 +268,6 @@ export default {
 </script>
 
 <style scoped>
-/* we will explain what these classes do next! */
 .fade-v-enter-active,
 .fade-v-leave-active {
   transition: opacity 0.5s ease;
