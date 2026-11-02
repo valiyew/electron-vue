@@ -62,6 +62,11 @@
         </div>
 
         <div :style="{ height: bottomHeight + 'px' }"></div>
+
+        <!-- No data -->
+        <div v-if="values.length === 0" class="no-data">
+          <p>No data available</p>
+        </div>
       </div>
 
       <!-- Custom scrollbar -->
@@ -85,7 +90,16 @@
         <button @click="showCommentModal = false">X</button>
       </div>
 
-      <div v-for="comment in userComments" :key="comment.id" class="commentsCard">
+      <div v-if="isLoading" v-for="n in 4" :key="n" class="commentsCard skeleton">
+        <div class="headerCommenter">
+          <div class="skeletonAvatar"></div>
+          <div class="skeletonName"></div>
+          <div class="skeletonBadge"></div>
+        </div>
+
+        <div class="skeletonText"></div>
+      </div>
+      <div v-else v-for="comment in userComments" :key="comment.id" class="commentsCard">
         <div class="headerCommenter">
           <img :src="comment.image" :alt="comment.name" />
           <strong>{{ comment.name }}</strong>
@@ -150,6 +164,7 @@ export default {
       isShared: false,
       showCommentModal: false,
       userComments: [],
+      isLoading: false,
 
       // Vertikal skrol
       itemHeight: 0,
@@ -254,10 +269,13 @@ export default {
     },
 
     handleClickComment(itemComments) {
+      this.isLoading = true;
       this.showCommentModal = true;
       this.userComments = itemComments;
 
-      console.log(this.userComments);
+      setTimeout(() => {
+        this.isLoading = false;
+      }, 1000);
     },
   },
 };
@@ -392,6 +410,13 @@ export default {
   margin-bottom: 8px;
 }
 
+.no-data {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
 .heartIcon,
 .commentIcon,
 .shareIcon {
@@ -425,5 +450,47 @@ export default {
 
 .track:hover {
   width: 12px;
+}
+
+.skeletonAvatar,
+.skeletonName,
+.skeletonBadge,
+.skeletonText {
+  background: #e0e0e0;
+  animation: skeleton-loading 1.2s infinite ease-in-out;
+  border-radius: 6px;
+}
+
+.skeletonAvatar {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+}
+
+.skeletonName {
+  width: 100px;
+  height: 14px;
+}
+
+.skeletonBadge {
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+}
+
+.skeletonText {
+  width: 80%;
+  height: 12px;
+  margin-top: 12px;
+}
+
+@keyframes skeleton-loading {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
 }
 </style>
