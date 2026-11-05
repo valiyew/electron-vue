@@ -1,11 +1,9 @@
 <script>
 import "./index.css";
-import VertualScrollBarOptimal from "./components/vertual-scroll-custom-scroll-bar/VertualScrollBarOptimal.vue";
 import VertualScrollBar from "./components/vertual-scroll-custom-scroll-bar/VertualScrollBar.vue";
 
 export default {
   components: {
-    VertualScrollBarOptimal,
     VertualScrollBar,
   },
 
@@ -20,8 +18,7 @@ export default {
 <template>
   <h1>Vertual Scroll and Custom Scroll bar</h1>
   <div class="box">
-    <VertualScrollBarOptimal />
-    <!-- <VertualScrollBar /> -->
+    <VertualScrollBar />
   </div>
 </template>
 

@@ -12,14 +12,21 @@
         "
         :style="{ width: `${contentWidth}px`, height: `${contentHeight}px` }"
       >
-        <div :style="{ height: topHeight + 'px' }"></div>
+        <div v-if="isVirtualReady" class="virtual-spacer" :style="{ height: `${totalHeight}px` }"></div>
 
-        <div class="user-card" v-for="(item, index) in visibleItems" :key="item.id" ref="itemsRef">
+        <div
+          class="user-card"
+          :class="{ 'virtual-card': isVirtualReady }"
+          v-for="(item, index) in visibleItems"
+          :key="item.id"
+          :style="{ top: `${itemsOffsets[item.id - 1]}px` }"
+          ref="itemsRef"
+        >
           <div class="about-user">
             <strong class="user-name">
               <img :src="item.image" :alt="item.name" class="user-image" />
 
-              {{ item.name }}
+              {{ item.name }} {{ item.id }}
 
               <svg width="15" height="15" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
                 <path
@@ -60,8 +67,6 @@
             </svg>
           </div>
         </div>
-
-        <div :style="{ height: bottomHeight + 'px' }"></div>
 
         <!-- No data -->
         <div v-if="values.length === 0" class="no-data">
@@ -124,7 +129,7 @@
 export default {
   data() {
     return {
-      values: Array.from({ length: 100 }, (_, index) => ({
+      values: Array.from({ length: 50 }, (_, index) => ({
         id: index + 1,
         name: ["Davron", "Ali", "Vali", "Said", "Jamshid", "Johon", "Tony Stark", "John Doe", "Jane Smith", "Robert Johnson"][Math.floor(Math.random() * 10)],
         age: 20 + (index % 11),
@@ -167,45 +172,42 @@ export default {
       isLoading: false,
 
       // Vertikal skrol
-      itemHeight: 0,
-      startIndex: 0,
+      buffer: 2,
+      itemsOffsets: [],
+      itemsHeights: [],
+      visibleItems: [],
+      totalHeight: 0,
+      isVirtualReady: false,
     };
   },
 
-  computed: {
-    visibleCount() {
-      return Math.ceil(this.contentHeight / this.itemHeight);
-    },
-
-    visibleItems() {
-      const start = this.startIndex;
-      const visibleCount = this.visibleCount;
-
-      return this.values.slice(start, start + visibleCount * 2);
-    },
-
-    topHeight() {
-      return this.startIndex * this.itemHeight;
-    },
-
-    bottomHeight() {
-      return (this.values.length - this.startIndex - this.visibleItems.length) * this.itemHeight;
-    },
+  created() {
+    this.visibleItems = this.values;
   },
 
   mounted() {
     const contentRef = this.$refs.contentRef;
     const trackRef = this.$refs.trackRef;
+    const items = this.$refs.itemsRef || [];
 
     const scrollHeight = contentRef.scrollHeight;
     const clientHeight = contentRef.clientHeight;
     const trackClientHeight = trackRef.clientHeight;
 
-    // Item heightini hisoblash
-    this.itemHeight = contentRef.scrollHeight / this.values.length;
+    this.itemsOffsets = items.map((item) => item.offsetTop);
+    this.itemsHeights = items.map((item) => item.offsetHeight);
+
+    this.totalHeight = scrollHeight;
+
+    console.log("Items height", this.itemsHeights);
+    console.log("Items offsets", this.itemsOffsets);
+    console.log("Scroll height", scrollHeight);
 
     // Birinchi renderda thumbni heightini korsatish un
     this.thumbHeight = (clientHeight / scrollHeight) * trackClientHeight;
+
+    this.isVirtualReady = true;
+    this.updateVirtualItems(0);
   },
 
   methods: {
@@ -228,11 +230,27 @@ export default {
         this.isScrolling = false;
       }, 1200);
 
-      // Vertual skrol
-      this.startIndex = Math.floor(scrollTop / this.itemHeight);
-
       // Thumb height calculation
       this.thumbHeight = (clientHeight / scrollHeight) * trackClientHeight;
+
+      this.updateVirtualItems(scrollTop);
+    },
+
+    updateVirtualItems(scrollTop) {
+      const visibleEnd = scrollTop + this.$refs.contentRef.clientHeight;
+
+      let firstIndex = this.itemsOffsets.findIndex((offset, index) => offset + this.itemsHeights[index] > scrollTop);
+
+      let lastIndex = this.itemsOffsets.findIndex((offset) => offset >= visibleEnd);
+
+      if (lastIndex === -1) {
+        lastIndex = this.values.length;
+      }
+
+      const start = Math.max(0, firstIndex - this.buffer);
+      const end = Math.min(this.values.length, lastIndex + this.buffer);
+
+      this.visibleItems = this.values.slice(start, end);
     },
 
     handleClick(e) {
@@ -342,6 +360,18 @@ export default {
   margin-bottom: 10px;
 }
 
+.virtual-spacer {
+  width: 1px;
+  pointer-events: none;
+  visibility: hidden;
+}
+
+.virtual-card {
+  position: absolute;
+  left: 25px;
+  right: 25px;
+}
+
 .headerCommenter {
   display: flex;
   align-items: center;
@@ -366,6 +396,7 @@ export default {
 }
 
 .content {
+  position: relative;
   border: 1px dotted #898888;
   padding: 20px 25px;
   border-radius: 20px;
