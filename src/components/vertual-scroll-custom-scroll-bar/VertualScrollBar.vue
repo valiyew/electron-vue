@@ -251,10 +251,12 @@ export default {
       const end = Math.min(this.values.length, lastIndex + this.buffer);
 
       this.visibleItems = this.values.slice(start, end);
+
+      console.log(scrollTop);
+      console.log(firstIndex, lastIndex);
     },
 
     handleClick(e) {
-      console.log(e);
       const contentRef = this.$refs.contentRef;
       const trackRef = this.$refs.trackRef;
       const cordinateY = e.clientY - trackRef.getBoundingClientRect().top;
